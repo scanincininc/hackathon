@@ -13,6 +13,7 @@ RUN corepack enable \
 COPY . .
 
 RUN pnpm install --frozen-lockfile \
+  && pnpm yorm:build \
   && pnpm build
 
 ENV NODE_ENV=production
