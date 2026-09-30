@@ -65,7 +65,7 @@ export const getStaff = (): Promise<StaffRow[]> => request<StaffRow[]>("/api/sta
 export const getPlan = (): Promise<Plan> => request<Plan>("/api/plan");
 export const getKpi = (): Promise<Kpi> => request<Kpi>("/api/kpi");
 
-export const syncMail = (): Promise<{ fetched: number; created: number; plan: Plan }> =>
+export const syncFixture = (): Promise<{ fetched: number; created: number; plan: Plan }> =>
   request("/api/sync", { method: "POST" });
 
 export const replan = (): Promise<Plan> => request<Plan>("/api/replan", { method: "POST" });

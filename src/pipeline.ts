@@ -12,7 +12,7 @@ import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 import { buildCaseDoc, type CaseDoc } from "./case-doc.ts";
 import { evaluate } from "./engine.ts";
-import { fetchMessages } from "./ingest.ts";
+import { loadReferralEmails } from "./ingest.ts";
 import { parseReferrals } from "./parser.ts";
 import { plan, referralKey } from "./planner.ts";
 import type {
@@ -171,7 +171,9 @@ export async function sync(
   pipeline: Pipeline,
   referrals?: Referral[],
 ): Promise<SyncResult> {
-  const incoming = referrals ?? parseReferrals(await fetchMessages());
+  // This demo uses the checked-in synthetic fixture directly. No inbox service
+  // or external email connection is needed to populate the queue.
+  const incoming = referrals ?? parseReferrals(loadReferralEmails());
   const existing = new Set(knownMessageIds(pipeline.db));
   const roster = readRoster(pipeline.db);
   const matrix = readMatrix(pipeline.db);

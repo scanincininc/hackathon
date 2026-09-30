@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Plan } from "../../model.ts";
-import { getKpi, getPlan, getQueue, getStaff, replan, syncMail, type Kpi, type QueueRow, type StaffRow } from "../api.ts";
+import { getKpi, getPlan, getQueue, getStaff, replan, syncFixture, type Kpi, type QueueRow, type StaffRow } from "../api.ts";
 
 export interface QueueState {
   rows: QueueRow[];
@@ -75,7 +75,7 @@ export function useQueue(): QueueState {
     busy,
     error,
     refresh,
-    sync: () => run(syncMail),
+    sync: () => run(syncFixture),
     replanNow: () => run(replan),
   };
 }

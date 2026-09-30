@@ -10,6 +10,7 @@
  *   nothing else. See `src/commit.ts` for why.
  */
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { createHonoYorm } from "@yorm/hono";
 import { createYorm, memoryRuntime } from "@yorm/yjs";
@@ -17,6 +18,7 @@ import type { Yorm } from "@yorm/yjs";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Context } from "hono";
+import { fileURLToPath } from "node:url";
 
 import { APP_CONFIG } from "./config.ts";
 import { commit, type CommitRequest, type CommitResult } from "./commit.ts";
@@ -85,6 +87,7 @@ export function createIris(options: { file?: string; config?: EngineConfig } = {
 
   const app = new Hono();
 
+  app.get("/api/health", (c) => c.json({ ok: true }));
   app.post("/api/sync", async (c) => c.json(await sync(pipeline)));
 
   app.get("/api/queue", (c) => {
@@ -193,8 +196,15 @@ export function createIris(options: { file?: string; config?: EngineConfig } = {
 /** Started only when this file is the entry point, so tests can import freely. */
 if (import.meta.url === `file://${process.argv[1]}`) {
   const iris = createIris();
+  // The public demo queue is populated from the checked-in fixture at startup.
+  // sync() deduplicates by message ID, so this is safe after service restarts.
+  await sync(iris.pipeline);
   const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app: iris.app });
   iris.app.route("/yorm", createHonoYorm(iris.yorm, { upgradeWebSocket }));
+  // In production the same Node service serves the Vite build and the API,
+  // keeping REST and Yjs WebSocket traffic on one origin. Keep this last so it
+  // cannot intercept API or WebSocket routes.
+  iris.app.use("*", serveStatic({ root: fileURLToPath(new URL("../dist", import.meta.url)) }));
 
   const port = Number(process.env["PORT"] ?? 5178);
   const server = serve({ fetch: iris.app.fetch, port }, (info) => {

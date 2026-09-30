@@ -1,0 +1,13 @@
+.git
+.gitmodules
+node_modules
+**/node_modules
+dist
+dev-dist
+data/*.db
+data/*.db-*
+test-results
+playwright-report
+.env
+.env.*
+!.env.example
